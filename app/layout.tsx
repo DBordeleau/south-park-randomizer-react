@@ -15,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   // Determine the initial theme, ensuring it defaults to 'light' if null
-  const initialTheme = typeof window !== 'undefined' && localStorage.getItem('theme')
+  const initialTheme = typeof window !== 'undefined' && window?.localStorage?.getItem('theme')
   ? localStorage.getItem('theme') || 'light'
   : 'light';
 

@@ -16,10 +16,14 @@ interface EpisodeData {
 export default function EpisodeDisplay() { // Component that renders generate episode button and the display card
     const [episodeData, setEpisodeData] = useState<EpisodeData | null>(null);
     const [fadeIn, setFadeIn] = useState(true);
-    const [seenEpisodes, setSeenEpisodes] = useState<string[]>(() => {
+    const [seenEpisodes, setSeenEpisodes] = useState<string[]>([]);
+
+    useEffect(() => {
+        // Only attempt to access localStorage on the client side
         const seenEpisodesString = localStorage.getItem("seenEpisodes");
-        return seenEpisodesString ? JSON.parse(seenEpisodesString) : [];
-    });
+        setSeenEpisodes(seenEpisodesString ? JSON.parse(seenEpisodesString) : []);
+    }, []);
+
 
 
     // Callback to update episodeData state
