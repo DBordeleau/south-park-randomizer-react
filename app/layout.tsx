@@ -24,7 +24,7 @@ export default function RootLayout({
       <html lang="en" className="!scroll-smooth transition">
         <head>
         </head>
-        <body className={`${inter.className}pt-20 ${initialTheme === 'dark' ? 'bg-dark' : 'bg-light'}`}>
+        <body className={`${inter.className}${initialTheme === 'dark' ? 'bg-dark' : 'bg-light'}`}>
           {children}
         </body>
       </html>

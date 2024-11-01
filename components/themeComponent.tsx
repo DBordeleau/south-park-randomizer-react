@@ -7,7 +7,7 @@ export default function ThemeComponent() {
     const { theme, toggleTheme } = useTheme();
 
     return (
-        <label className="fixed swap swap-rotate top-4 right-4">
+        <label className="fixed swap swap-rotate top-4 right-4 hover:scale-125 transition">
             <input name='dark-mode-toggle' id="dark-mode-toggle" type="checkbox" className="theme-controller" onChange={toggleTheme} />
             {/* sun icon */}
             <svg

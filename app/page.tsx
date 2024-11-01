@@ -2,11 +2,10 @@
 
 import ThemeComponent from '@/components/themeComponent';
 import EpisodeDisplay from '@/components/episodeDisplay';
-import SeenListButton from '@/components/seenListButton';
 
 export default function Home() {
   return (
-    <main className="flex sm:mt-32 flex-col items-center">
+    <main className="flex h-screen sm:mt-10 flex-col items-center overflow-y-auto">
       <ThemeComponent />
       <EpisodeDisplay />
     </main>

@@ -27,7 +27,7 @@ export default function SeenListButton({ seenEpisodes, setSeenEpisodes }: SeenLi
             
         <AnimatePresence>
             {seenListVisible && ( // Render logic for seen list
-                <motion.div className="mt-4 bg-white text-black dark:bg-black/85 dark:text-white p-4 rounded shadow"
+                <motion.div className="mt-4 bg-white text-[.7rem] sm:text-[.8rem] text-black dark:bg-black/85 dark:text-white p-4 rounded shadow flex flex-col min-w-[14rem] max-w-[14rem] sm:min-w-[18rem] sm:max-w-[18rem] mb-4 max-h-[10rem] "
                 initial={{ opacity: 0, y: 100 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 100 }}
@@ -35,7 +35,7 @@ export default function SeenListButton({ seenEpisodes, setSeenEpisodes }: SeenLi
                     <h3 className="font-bold text-lg underline">Seen Episodes</h3>
                     {seenEpisodes.length > 0 ? ( // If seen list is visible and theres at least 1 episode in the list
                         <>
-                            <ul className="mb-4 max-h-[10rem] overflow-y-auto">
+                            <ul className="overflow-y-auto">
                             <button
                                 className="bg-red-500 hover:bg-red-600 text-white border border-black font-semibold py-2 px-4 rounded"
                                 onClick={clearSeenList}>
