@@ -29,7 +29,7 @@ export default function EpisodeCard({ episode, fadeIn }: EpisodeCardProps) {
 
         return (
           <div id="episodeCard" className={`bg-white text-black dark:bg-black/10 dark:text-white w-full sm:w-[27.5rem] rounded-lg shadow-2xl transition-all min-h-[22rem] ${fadeClass}`}>
-              {episode.Poster && <Image className="hidden max-h-[18rem] w-full sm:block object-cover h-[16.15625rem] sm:w-[27.5rem] rounded-t-lg" src={episode.Poster} alt={`Poster for ${episode.Title}`} />}
+              {episode.Poster && <img className="hidden max-h-[18rem] w-full sm:block object-cover h-[16.15625rem] sm:w-[27.5rem] rounded-t-lg" src={episode.Poster} alt={`Poster for ${episode.Title}`} />}
               <div className="px-6 py-4">
                   <div id="episodeTitle" className="font-bold text-xl mb-2">
                       S{episode.Season}E{episode.Episode}: {episode.Title}

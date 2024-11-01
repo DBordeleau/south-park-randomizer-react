@@ -23,8 +23,6 @@ export default function RootLayout({
     <ThemeProvider>
       <html lang="en" className="!scroll-smooth transition">
         <head>
-          <script src="./utils/getSouthParkEpisode.js"></script>
-          <link href='./app/globals.css' rel='stylesheet'></link>
         </head>
         <body className={`${inter.className}pt-20 ${initialTheme === 'dark' ? 'bg-dark' : 'bg-light'}`}>
           {children}
