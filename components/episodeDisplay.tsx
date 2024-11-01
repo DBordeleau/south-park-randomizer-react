@@ -55,7 +55,7 @@ export default function EpisodeDisplay() { // Component that renders generate ep
                 <EpisodeCard episode={episodeData} fadeIn={fadeIn} />
                 {episodeData && (
                     <button onClick={markEpisodeAsSeen} className="bg-red-500 hover:bg-red-600 border border-black text-white font-semibold py-2 px-4 rounded mt-4">
-                        Already Seen It (Don't generate again)
+                        Already Seen It (Do not generate again)
                     </button>
                 )}
                 <SeenListButton seenEpisodes={seenEpisodes} setSeenEpisodes={setSeenEpisodes} />
