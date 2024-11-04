@@ -1,6 +1,7 @@
 import './globals.css';
 import { Inter } from 'next/font/google';
 import ThemeProvider from '@/context/themeContext';
+import Footer from '@/components/footer';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -24,9 +25,10 @@ export default function RootLayout({
       <html lang="en" className="!scroll-smooth transition">
         <head>
         </head>
-        <body className={`${inter.className}${initialTheme === 'dark' ? 'bg-dark' : 'bg-light'}`}>
+        <body className={`relative ${inter.className}${initialTheme === 'dark' ? 'bg-dark' : 'bg-light'}`}>
           {children}
         </body>
+        <Footer />
       </html>
     </ThemeProvider>
   );
