@@ -47,6 +47,7 @@ export function getSouthParkEpisode(displayResult: (data: EpisodeData) => void) 
     if (episode === null) {
         console.error('Episode number could not be determined.');
         getSouthParkEpisode(displayResult)
+        return;
     }
 
     // Fetch the episode data from the Next.js API route

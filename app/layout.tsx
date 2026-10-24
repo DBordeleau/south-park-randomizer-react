@@ -20,15 +20,19 @@ export default function RootLayout({
   ? localStorage.getItem('theme') || 'light'
   : 'light';
 
+  // Apply the dark class before first paint so the browser only downloads the background for the active theme
+  const themeScript = `try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}`;
+
   return (
     <ThemeProvider>
-      <html lang="en" className="!scroll-smooth transition">
+      <html lang="en" className="!scroll-smooth transition" suppressHydrationWarning>
         <head>
+          <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         </head>
         <body className={`relative ${inter.className}${initialTheme === 'dark' ? 'bg-dark' : 'bg-light'}`}>
           {children}
+          <Footer />
         </body>
-        <Footer />
       </html>
     </ThemeProvider>
   );

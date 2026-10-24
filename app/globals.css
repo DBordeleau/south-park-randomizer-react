@@ -3,13 +3,13 @@
 @tailwind utilities;
 
 html {
-  background-image: url('/spday4k.jpg');
+  background-image: url('./backgrounds/spday.webp');
   background-size: cover; /* Ensure the image covers the entire background */
   background-repeat: no-repeat; /* Prevent repetition of the image */
 }
 
 html.dark {
-  background-image: url('/spnight4k.jpg');
+  background-image: url('./backgrounds/spnight.webp');
   background-size: cover; /* Ensure the image covers the entire background */
   background-repeat: no-repeat; /* Prevent repetition of the image */
 }
