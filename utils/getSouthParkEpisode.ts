@@ -7,82 +7,90 @@ export interface EpisodeData {
     Poster?: string;
 }
 
-export function getSouthParkEpisode(displayResult: (data: EpisodeData) => void) {
-    const season = Math.floor(Math.random() * 26) + 1;
-    let episode: number | null = null;
+const MAX_ATTEMPTS = 3;
 
-    // Set episode based on season count logic
-    switch (season) {
-        case 1: episode = Math.floor(Math.random() * 13) + 1; break; // 13 episodes in season 1
-        case 2: episode = Math.floor(Math.random() * 18) + 1; break; // 18 episodes in season 2
-        case 3:
-        case 4:
-        case 6: episode = Math.floor(Math.random() * 17) + 1; break; // 17 episodes in seasons 3, 4, 6
-        case 5: episode = Math.floor(Math.random() * 14) + 1; break; // 14 episodes in season 5
-        case 7: episode = Math.floor(Math.random() * 15) + 1; break; // 15 episodes in season 7
-        case 8:
-        case 9:
-        case 10:
-        case 11:
-        case 12:
-        case 13:
-        case 14:
-        case 15:
-        case 16: episode = Math.floor(Math.random() * 14) + 1; break; // 14 episodes in seasons 8-16
-        case 17:
-        case 18:
-        case 19:
-        case 20:
-        case 21:
-        case 22:
-        case 23: episode = Math.floor(Math.random() * 10) + 1; break; // 10 episodes in seasons 17-23
-        case 25:
-        case 26: episode = Math.floor(Math.random() * 6) + 1; break; // 6 episodes in seasons 25-26
+let seasonsPromise: Promise<number[][]> | null = null;
+
+// Fetch the episode numbers for each season once per page load
+function loadSeasons(): Promise<number[][]> {
+    if (!seasonsPromise) {
+        seasonsPromise = fetch('/api/seasons')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Seasons API returned status ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => data.seasons as number[][])
+            .catch(error => {
+                seasonsPromise = null; // allow a retry on the next click
+                throw error;
+            });
     }
+    return seasonsPromise;
+}
 
-    // Log the generated season and episode
-    console.log(`Generated season: ${season}, episode: ${episode}`);
+// Seen list entries are stored as "S1E2: Title", this returns the "S1E2" part
+export function getEpisodeId(season: number | string, episode: number | string) {
+    return `S${season}E${episode}`;
+}
 
-    // Ensure episode is defined before making the fetch call
-    if (episode === null) {
-        console.error('Episode number could not be determined.');
-        getSouthParkEpisode(displayResult)
+function getSeenEpisodeIds(): Set<string> {
+    const seenEpisodesString = localStorage.getItem("seenEpisodes");
+    const seenEpisodes: string[] = seenEpisodesString ? JSON.parse(seenEpisodesString) : [];
+    return new Set(seenEpisodes.map(entry => entry.split(':')[0]));
+}
+
+export async function getSouthParkEpisode(displayResult: (data: EpisodeData) => void, displayNotice: (message: string) => void) {
+    let seasons: number[][];
+    try {
+        seasons = await loadSeasons();
+    } catch (error) {
+        console.error('Error fetching seasons:', error);
+        displayNotice("Couldn't load the episode list. Try again in a moment.");
         return;
     }
 
-    // Fetch the episode data from the Next.js API route
-    fetch(`/api/fetchEpisode?season=${season}&episode=${episode}`)
-        .then(response => response.json())
-        .then(data => {
-            console.log('Fetched episode data:', data); // Log the data here
+    // Build the list of unseen episodes so every episode has the same chance of being picked
+    const seenIds = getSeenEpisodeIds();
+    const unseen: [number, number][] = [];
+    seasons.forEach((episodes, index) => {
+        episodes.forEach(episode => {
+            if (!seenIds.has(getEpisodeId(index + 1, episode))) {
+                unseen.push([index + 1, episode]);
+            }
+        });
+    });
 
-            if (data.Response === "False") {
-                console.error('Error from API:', data.Error);
-                return; // Early exit if API returns an error
+    const allSeen = unseen.length === 0;
+
+    for (let attempt = 0; attempt < MAX_ATTEMPTS && unseen.length > 0; attempt++) {
+        const [season, episode] = unseen.splice(Math.floor(Math.random() * unseen.length), 1)[0];
+
+        try {
+            const response = await fetch(`/api/fetchEpisode?season=${season}&episode=${episode}`);
+            const data = await response.json();
+
+            if (!response.ok || data.Response === "False") {
+                console.error('Error from API:', data.Error || data.error);
+                continue; // try a different episode
             }
 
-            // Assuming the response data structure matches EpisodeData
-            const formattedData: EpisodeData = {
+            displayResult({
                 Season: data.Season,
                 Episode: data.Episode,
                 Title: data.Title,
                 Released: data.Released,
                 Plot: data.Plot,
-                Poster: data.Poster || '', // Default to empty string if no poster
-            };
-
-            const episodeId = `S${formattedData.Season}E${formattedData.Episode}`;
-            const seenEpisodesString = localStorage.getItem("seenEpisodes");
-            const seenEpisodes: string[] = seenEpisodesString ? JSON.parse(seenEpisodesString) : [];
-
-            // If the episode has been seen, fetch another one
-            if (seenEpisodes.includes(episodeId)) {
-                getSouthParkEpisode(displayResult); // retry if episode already seen
-            } else {
-                displayResult(formattedData); // call callback to display the result
-            }
-        })
-        .catch(error => {
+                Poster: data.Poster && data.Poster !== 'N/A' ? data.Poster : '', // OMDB uses "N/A" when there's no poster
+            });
+            return;
+        } catch (error) {
             console.error('Error fetching data:', error);
-        });
+        }
+    }
+
+    displayNotice(allSeen
+        ? "You've seen every episode! Clear your seen list to start over."
+        : "Couldn't load an episode. Try again in a moment.");
 }
