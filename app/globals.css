@@ -2,32 +2,123 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --sky: #86CFE8;
+  --card: #FFFFFF;
+  --glass: rgba(255, 255, 255, .82);
+  --ink: #16181D;
+  --ink-soft: #363C48;
+  --muted: #5A6170;
+  --edge: #16181D;
+  --shadow: #16181D;
+  --tile: #24476B;
+  --mtn-back: #2F8A5E;
+  --mtn-front: #1E6B47;
+  --cap: #FFFFFF;
+  --chip: #E6F4FA;
+  --track: #E1E6EC;
+  --accent: #D7262C;
+  --accent2: #F28C28;
+  color-scheme: light;
+}
+
+html.dark {
+  --sky: #121836;
+  --card: #1A2148;
+  --glass: rgba(26, 33, 72, .84);
+  --ink: #F2F4FA;
+  --ink-soft: #CDD3EA;
+  --muted: #A3ABCB;
+  --edge: #3A4485;
+  --shadow: #05081A;
+  --tile: #33407F;
+  --mtn-back: #283270;
+  --mtn-front: #1C2456;
+  --cap: #C7D0EE;
+  --chip: #262E5E;
+  --track: #2A3366;
+  --accent2: #F59E3D;
+  color-scheme: dark;
+}
+
+/* The theme script in layout.tsx sets the dark class before first paint, so only one of these images downloads */
 html {
+  min-height: 100%;
+  background-color: var(--sky);
   background-image: url('./backgrounds/spday.webp');
-  background-size: cover; /* Ensure the image covers the entire background */
-  background-repeat: no-repeat; /* Prevent repetition of the image */
+  background-position: center 70%;
+  background-size: cover;
+  background-repeat: no-repeat;
+  color: var(--ink);
 }
 
 html.dark {
   background-image: url('./backgrounds/spnight.webp');
-  background-size: cover; /* Ensure the image covers the entire background */
-  background-repeat: no-repeat; /* Prevent repetition of the image */
+  background-position: 22% center;
 }
 
-.bg-light {
+@media (min-width: 960px) {
+  html {
+    background-position: center 60%;
+  }
 
+  html.dark {
+    background-position: center 75%;
+  }
 }
 
-.bg-dark {
+@layer components {
+  /* Frosted panel that lets the show art show through */
+  .glass {
+    background-color: var(--glass);
+    -webkit-backdrop-filter: blur(10px) saturate(1.2);
+    backdrop-filter: blur(10px) saturate(1.2);
+  }
 
+  /* Paper button that lifts on hover and presses flat when clicked */
+  .press {
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+
+  .press:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+
+  .press:active:not(:disabled) {
+    transform: translateY(3px);
+    box-shadow: 0 0 0 var(--shadow);
+  }
+
+  .press:disabled {
+    cursor: wait;
+    opacity: .7;
+  }
 }
 
-.fade-in {
-  opacity: 1;
-  transition: opacity 0.4s ease-in;
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
 }
 
-.fade-out {
-  opacity: 0;
-  transition: opacity 0.4s ease-out;
+/* Seen list bottom sheet on narrow screens */
+.sheet::backdrop {
+  background: rgba(16, 32, 43, .55);
+}
+
+.sheet[open] {
+  animation: sheet-up .25s ease-out;
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
 }

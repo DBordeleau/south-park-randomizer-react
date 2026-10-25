@@ -21,32 +21,17 @@ export default function ThemeProvider({
   const [theme, setTheme] = useState<Theme>("light");
 
   const toggleTheme = () => {
-    if (theme === "light") {
-      setTheme("dark");
-      window.localStorage.setItem("theme", "dark");
-      document.documentElement.classList.add('dark');
-    } else {
-      setTheme("light");
-      window.localStorage.setItem("theme", "light");
-      document.documentElement.classList.remove('dark');
-
-    }
+    const next = theme === "light" ? "dark" : "light";
+    setTheme(next);
+    window.localStorage.setItem("theme", next);
+    document.documentElement.classList.toggle('dark', next === "dark");
   };
 
+  // The theme script in layout.tsx has already applied the saved or system theme, so read it back from the page
   useEffect(() => {
-    const localTheme = window.localStorage.getItem("theme") as Theme | null;
-    const checkbox = document.getElementById('dark-mode-toggle') as HTMLInputElement
-
-    if (localTheme) {
-      setTheme(localTheme);
-
-      if (localTheme === "dark") {
-        document.documentElement.classList.add('dark');
-        checkbox.checked = true
-      }
-    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    if (document.documentElement.classList.contains('dark')) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- the page class is only readable after mount
       setTheme("dark");
-      document.documentElement.classList.add('dark');
     }
   }, []);
 

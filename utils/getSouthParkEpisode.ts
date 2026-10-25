@@ -12,7 +12,7 @@ const MAX_ATTEMPTS = 3;
 let seasonsPromise: Promise<number[][]> | null = null;
 
 // Fetch the episode numbers for each season once per page load
-function loadSeasons(): Promise<number[][]> {
+export function loadSeasons(): Promise<number[][]> {
     if (!seasonsPromise) {
         seasonsPromise = fetch('/api/seasons')
             .then(response => {
@@ -41,13 +41,13 @@ function getSeenEpisodeIds(): Set<string> {
     return new Set(seenEpisodes.map(entry => entry.split(':')[0]));
 }
 
-export async function getSouthParkEpisode(displayResult: (data: EpisodeData) => void, displayNotice: (message: string) => void) {
+export async function getSouthParkEpisode(displayResult: (data: EpisodeData) => void, displayNotice: (message: string, allSeen: boolean) => void) {
     let seasons: number[][];
     try {
         seasons = await loadSeasons();
     } catch (error) {
         console.error('Error fetching seasons:', error);
-        displayNotice("Couldn't load the episode list. Try again in a moment.");
+        displayNotice("Couldn't load the episode list. Try again in a moment.", false);
         return;
     }
 
@@ -92,5 +92,5 @@ export async function getSouthParkEpisode(displayResult: (data: EpisodeData) => 
 
     displayNotice(allSeen
         ? "You've seen every episode! Clear your seen list to start over."
-        : "Couldn't load an episode. Try again in a moment.");
+        : "Couldn't load an episode. Try again in a moment.", allSeen);
 }
