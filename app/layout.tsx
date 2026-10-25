@@ -1,13 +1,30 @@
 import './globals.css';
 import { Bowlby_One, Rubik } from 'next/font/google';
+import type { Metadata } from 'next';
 import ThemeProvider from '@/context/themeContext';
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from '@/utils/site';
 
 const display = Bowlby_One({ weight: '400', subsets: ['latin'], variable: '--font-display' });
 const body = Rubik({ subsets: ['latin'], variable: '--font-body' });
 
-export const metadata = {
-  title: 'South Park Randomizer',
-  description: 'Generates random South Park episodes.',
+// The share image comes from opengraph-image.tsx
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  alternates: { canonical: '/' },
+  openGraph: {
+    type: 'website',
+    url: '/',
+    siteName: SITE_NAME,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export default function RootLayout({

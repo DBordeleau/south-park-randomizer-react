@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import EpisodeCard, { primaryButton, secondaryButton } from './episodeCard';
 import Header from './header';
