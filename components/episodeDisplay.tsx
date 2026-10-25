@@ -3,7 +3,7 @@ import EpisodeCard, { primaryButton, secondaryButton } from './episodeCard';
 import Header from './header';
 import SeenList from './seenList';
 import { DiceIcon, EyeOffIcon } from './icons';
-import { EpisodeData, getEpisodeId, getSouthParkEpisode, loadSeasons } from '../utils/getSouthParkEpisode';
+import { EpisodeData, fetchEpisode, getEpisodeId, getSouthParkEpisode, loadSeasons, parseEpisodeId } from '../utils/getSouthParkEpisode';
 
 // Keeps the fade visible when an episode comes back from the cache almost instantly
 const MIN_ROLL_MS = 250;
@@ -25,28 +25,52 @@ export default function EpisodeDisplay() { // Renders the header, the episode ca
     const [totalEpisodes, setTotalEpisodes] = useState<number | null>(null);
     const [sheetOpen, setSheetOpen] = useState(false);
     const sheetRef = useRef<HTMLDialogElement>(null);
+    const latestLoad = useRef(0);
 
-    const generateEpisode = useCallback(() => {
+    // Starts the fade and returns a function that swaps in the result once the fade has played.
+    // A result is dropped if another load started after it, so the last tap always wins
+    const startLoad = useCallback(() => {
+        const load = ++latestLoad.current;
         const started = Date.now();
-        // Wait out the rest of the fade before swapping in the result
-        const afterFade = (update: () => void) => setTimeout(() => {
+        setRolling(true);
+        return (update: () => void) => setTimeout(() => {
+            if (load !== latestLoad.current) return;
             update();
             setRolling(false);
         }, Math.max(0, MIN_ROLL_MS - (Date.now() - started)));
+    }, []);
 
-        setRolling(true);
+    const showEpisode = useCallback((data: EpisodeData) => {
+        setEpisodeData(data);
+        setNotice(null);
+        setAllSeen(false);
+    }, []);
+
+    const generateEpisode = useCallback(() => {
+        const afterFade = startLoad();
         getSouthParkEpisode(
-            data => afterFade(() => {
-                setEpisodeData(data);
-                setNotice(null);
-                setAllSeen(false);
-            }),
+            data => afterFade(() => showEpisode(data)),
             (message, everySeen) => afterFade(() => {
                 setNotice(message);
                 setAllSeen(everySeen);
             })
         );
-    }, []);
+    }, [startLoad, showEpisode]);
+
+    // Shows an episode from the seen list in the main card
+    const openSeenEpisode = (entry: string) => {
+        const id = parseEpisodeId(entry);
+        if (!id) return;
+        setSheetOpen(false);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        const afterFade = startLoad();
+        fetchEpisode(...id)
+            .catch(() => null)
+            .then(data => afterFade(() => data
+                ? showEpisode(data)
+                : setNotice("Couldn't load that episode. Try again in a moment.")));
+    };
 
     // Load the seen list and the first episode when the page opens
     useEffect(() => {
@@ -80,6 +104,9 @@ export default function EpisodeDisplay() { // Renders the header, the episode ca
         }
     };
 
+    // True when the card is showing an episode opened from the seen list
+    const alreadySeen = !!episodeData && seenEpisodes.some(entry => entry.split(':')[0] === getEpisodeId(episodeData.Season, episodeData.Episode));
+
     const removeSeenEpisode = (entry: string) => updateSeenEpisodes(seenEpisodes.filter(e => e !== entry));
     const clearSeenEpisodes = () => updateSeenEpisodes([]);
 
@@ -102,6 +129,7 @@ export default function EpisodeDisplay() { // Renders the header, the episode ca
     const seenListProps = {
         seenEpisodes,
         totalEpisodes,
+        onOpen: openSeenEpisode,
         onRemove: removeSeenEpisode,
         onClear: clearSeenEpisodes,
     };
@@ -116,6 +144,7 @@ export default function EpisodeDisplay() { // Renders the header, the episode ca
                     rolling={rolling}
                     notice={notice}
                     allSeen={allSeen}
+                    alreadySeen={alreadySeen}
                     onRoll={generateEpisode}
                     onMarkSeen={markEpisodeAsSeen}
                     onClearSeen={clearSeenEpisodes}
@@ -141,8 +170,8 @@ export default function EpisodeDisplay() { // Renders the header, the episode ca
             {/* Phone action bar, so the main buttons stay under your thumb */}
             {!notice && !allSeen && (
                 <div className="fixed inset-x-0 bottom-0 z-20 flex gap-2.5 border-t-[3px] border-edge bg-card px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-3 sm:hidden">
-                    <button type="button" onClick={markEpisodeAsSeen} disabled={rolling || !episodeData} className={`${secondaryButton} min-h-[54px] flex-none px-4 text-base`}>
-                        <EyeOffIcon /> Seen it
+                    <button type="button" onClick={markEpisodeAsSeen} disabled={rolling || !episodeData || alreadySeen} className={`${secondaryButton} min-h-[54px] flex-none px-4 text-base`}>
+                        <EyeOffIcon /> {alreadySeen ? 'Seen' : 'Seen it'}
                     </button>
                     <button type="button" onClick={generateEpisode} disabled={rolling} className={`${primaryButton} min-h-[54px] flex-1 px-4`}>
                         <DiceIcon /> {rolling ? 'Rolling…' : 'Roll another'}

@@ -35,6 +35,33 @@ export function getEpisodeId(season: number | string, episode: number | string) 
     return `S${season}E${episode}`;
 }
 
+// Turns "S1E2: Title" back into [1, 2]
+export function parseEpisodeId(entry: string): [number, number] | null {
+    const match = /^S(\d+)E(\d+)/.exec(entry);
+    return match ? [Number(match[1]), Number(match[2])] : null;
+}
+
+// Fetches one episode's details, or null if OMDB doesn't have it
+export async function fetchEpisode(season: number, episode: number): Promise<EpisodeData | null> {
+    const response = await fetch(`/api/fetchEpisode?season=${season}&episode=${episode}`);
+    const data = await response.json();
+
+    if (!response.ok || data.Response === "False") {
+        console.error('Error from API:', data.Error || data.error);
+        return null;
+    }
+
+    return {
+        Season: data.Season,
+        Episode: data.Episode,
+        Title: data.Title,
+        Released: data.Released,
+        // OMDB uses "N/A" when there's no plot or poster
+        Plot: data.Plot && data.Plot !== 'N/A' ? data.Plot : '',
+        Poster: data.Poster && data.Poster !== 'N/A' ? data.Poster : '',
+    };
+}
+
 function getSeenEpisodeIds(): Set<string> {
     const seenEpisodesString = localStorage.getItem("seenEpisodes");
     const seenEpisodes: string[] = seenEpisodesString ? JSON.parse(seenEpisodesString) : [];
@@ -68,23 +95,12 @@ export async function getSouthParkEpisode(displayResult: (data: EpisodeData) => 
         const [season, episode] = unseen.splice(Math.floor(Math.random() * unseen.length), 1)[0];
 
         try {
-            const response = await fetch(`/api/fetchEpisode?season=${season}&episode=${episode}`);
-            const data = await response.json();
-
-            if (!response.ok || data.Response === "False") {
-                console.error('Error from API:', data.Error || data.error);
-                continue; // try a different episode
+            const data = await fetchEpisode(season, episode);
+            if (data) {
+                displayResult(data);
+                return;
             }
-
-            displayResult({
-                Season: data.Season,
-                Episode: data.Episode,
-                Title: data.Title,
-                Released: data.Released,
-                Plot: data.Plot,
-                Poster: data.Poster && data.Poster !== 'N/A' ? data.Poster : '', // OMDB uses "N/A" when there's no poster
-            });
-            return;
+            // otherwise try a different episode
         } catch (error) {
             console.error('Error fetching data:', error);
         }

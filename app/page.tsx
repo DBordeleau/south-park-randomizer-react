@@ -1,13 +1,12 @@
 'use client';
 
 import EpisodeDisplay from '@/components/episodeDisplay';
-import Footer from '@/components/footer';
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col">
+    // Bottom padding on phones keeps the card clear of the fixed action bar
+    <div className="flex min-h-screen flex-col pb-28 sm:pb-10">
       <EpisodeDisplay />
-      <Footer />
     </div>
   );
 }
