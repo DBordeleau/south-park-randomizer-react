@@ -5,12 +5,13 @@ interface SeenListProps {
     seenEpisodes: string[]; // entries look like "S1E2: Title"
     totalEpisodes: number | null; // null until the season list loads
     headingId: string;
+    onOpen: (entry: string) => void;
     onRemove: (entry: string) => void;
     onClear: () => void;
     onClose?: () => void; // only the bottom sheet can be closed
 }
 
-export default function SeenList({ seenEpisodes, totalEpisodes, headingId, onRemove, onClear, onClose }: SeenListProps) {
+export default function SeenList({ seenEpisodes, totalEpisodes, headingId, onOpen, onRemove, onClear, onClose }: SeenListProps) {
     const count = seenEpisodes.length;
     const percent = totalEpisodes ? Math.min(100, count / totalEpisodes * 100) : 0;
 
@@ -44,9 +45,12 @@ export default function SeenList({ seenEpisodes, totalEpisodes, headingId, onRem
                             const id = split === -1 ? entry : entry.slice(0, split);
                             const title = split === -1 ? '' : entry.slice(split + 2);
                             return (
-                                <li key={entry} className="flex items-center gap-3 rounded-xl bg-chip py-1 pl-2.5 pr-1 wide:py-1.5 wide:pr-1.5">
-                                    <span className="flex-none rounded-lg border-2 border-edge bg-card px-2 py-1 text-xs font-bold tracking-[.04em]">{id}</span>
-                                    <span className="min-w-0 flex-1 text-[15px] font-medium leading-snug">{title}</span>
+                                <li key={entry} className="flex items-center gap-1 rounded-xl bg-chip py-1 pl-1 pr-1 wide:py-1.5 wide:pr-1.5">
+                                    {/* Tapping the episode shows it in the main card */}
+                                    <button type="button" onClick={() => onOpen(entry)} className="group flex min-h-11 min-w-0 flex-1 items-center gap-3 rounded-lg pl-1.5 text-left">
+                                        <span className="flex-none rounded-lg border-2 border-edge bg-card px-2 py-1 text-xs font-bold tracking-[.04em]">{id}</span>
+                                        <span className="min-w-0 flex-1 text-[15px] font-medium leading-snug decoration-2 underline-offset-[3px] group-hover:underline">{title}</span>
+                                    </button>
                                     <button type="button" onClick={() => onRemove(entry)} aria-label={`Remove ${title || id} from seen list`} className="inline-flex h-11 w-11 flex-none items-center justify-center rounded-full text-muted hover:bg-track">
                                         <CloseIcon size={18} />
                                     </button>

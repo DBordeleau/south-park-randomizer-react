@@ -20,9 +20,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       const data: any = await response.json();
 
-      // Episode data never changes, so let Vercel's CDN serve repeat requests instead of invoking this function
+      // New episodes start out on IMDb as stubs like "Episode #29.2" with no plot until someone fills them in
+      const isPlaceholder = /^Episode #\d+\.\d+$/.test(data.Title) || !data.Plot || data.Plot === 'N/A';
+
+      // Episode data never changes once it's filled in, so let Vercel's CDN serve repeat requests instead of invoking this function.
+      // Placeholders only get a day so the real details show up soon after IMDb adds them
       if (data.Response !== 'False') {
-          res.setHeader('Cache-Control', 'public, s-maxage=2592000, stale-while-revalidate=86400');
+          const maxAge = isPlaceholder ? 86400 : 2592000;
+          res.setHeader('Cache-Control', `public, s-maxage=${maxAge}, stale-while-revalidate=86400`);
       }
 
       // Only send the fields the client uses

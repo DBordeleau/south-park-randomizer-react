@@ -7,6 +7,7 @@ interface EpisodeCardProps {
   rolling: boolean;
   notice: string | null;
   allSeen: boolean;
+  alreadySeen: boolean; // the episode was opened from the seen list
   onRoll: () => void;
   onMarkSeen: () => void;
   onClearSeen: () => void;
@@ -47,11 +48,11 @@ function Message({ title, body, action }: { title: string; body: string; action:
   );
 }
 
-export default function EpisodeCard({ episode, rolling, notice, allSeen, onRoll, onMarkSeen, onClearSeen }: EpisodeCardProps) {
+export default function EpisodeCard({ episode, rolling, notice, allSeen, alreadySeen, onRoll, onMarkSeen, onClearSeen }: EpisodeCardProps) {
   const aired = episode ? formatAired(episode.Released) : null;
 
   return (
-    <section aria-label="Random episode" aria-busy={rolling} className="glass min-w-0 flex-[999_1_560px] overflow-hidden rounded-[20px] sm:rounded-3xl border-[3px] border-edge shadow-paper-lg">
+    <section aria-label="Episode" aria-busy={rolling} className="glass min-w-0 flex-[999_1_560px] overflow-hidden rounded-[20px] sm:rounded-3xl border-[3px] border-edge shadow-paper-lg">
       {allSeen ? (
         <Message
           title="You've seen every episode"
@@ -91,7 +92,11 @@ export default function EpisodeCard({ episode, rolling, notice, allSeen, onRoll,
                   {aired && <span className="text-[13px] sm:text-sm text-muted">Aired {aired}</span>}
                 </div>
                 <h2 className="font-display text-[28px] sm:text-[clamp(28px,3.4vw,42px)] leading-[1.08]">{episode.Title}</h2>
-                <p className="max-w-[56ch] text-base sm:text-[17px] leading-relaxed text-ink-soft">{episode.Plot}</p>
+                {episode.Plot ? (
+                  <p className="max-w-[56ch] text-base sm:text-[17px] leading-relaxed text-ink-soft">{episode.Plot}</p>
+                ) : (
+                  <p className="max-w-[56ch] text-base sm:text-[17px] leading-relaxed text-muted italic">No description yet. Newer episodes can take a few weeks to get one.</p>
+                )}
               </>
             ) : (
               <div className="flex animate-pulse flex-col gap-4" aria-label="Loading episode">
@@ -105,8 +110,8 @@ export default function EpisodeCard({ episode, rolling, notice, allSeen, onRoll,
               <button type="button" onClick={onRoll} disabled={rolling} className={primaryButton}>
                 <DiceIcon /> {rolling ? 'Rolling…' : 'Roll another'}
               </button>
-              <button type="button" onClick={onMarkSeen} disabled={rolling || !episode} className={secondaryButton}>
-                <EyeOffIcon /> Seen it, skip it
+              <button type="button" onClick={onMarkSeen} disabled={rolling || !episode || alreadySeen} className={secondaryButton}>
+                <EyeOffIcon /> {alreadySeen ? 'Already seen' : 'Seen it, skip it'}
               </button>
             </div>
             <p className="hidden text-sm text-muted sm:block">Episodes you mark as seen stay out of the rotation.</p>
